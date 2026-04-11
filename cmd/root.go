@@ -1,24 +1,3 @@
-/*
-Copyright © 2026 madflow
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
 package cmd
 
 import (
@@ -27,30 +6,48 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"tmuxi/internal/discovery"
 )
 
 var cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "tmuxi",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:           "tmuxi",
+	Short:         "A tmux project orchestrator in Go",
+	SilenceUsage:  true,
+	SilenceErrors: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+		if len(args) == 0 {
+			if _, ok := discovery.LocalProject(cwd); ok {
+				return runLocal(cmd, nil)
+			}
+			return cmd.Help()
+		}
+
+		name := args[0]
+		if isReservedCommand(name) {
+			return cmd.Help()
+		}
+
+		if _, ok, err := discovery.ProjectByName(name); err != nil {
+			return err
+		} else if ok {
+			return runStart(cmd, []string{name})
+		}
+
+		return fmt.Errorf("unknown command or project %q", name)
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
@@ -58,37 +55,50 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "tmuxi config file")
+	rootCmd.SetOut(os.Stdout)
+	rootCmd.SetErr(os.Stderr)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tmuxi.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(newStartCommand())
+	rootCmd.AddCommand(newStopCommand())
+	rootCmd.AddCommand(newStopAllCommand())
+	rootCmd.AddCommand(newLocalCommand())
+	rootCmd.AddCommand(newDebugCommand())
+	rootCmd.AddCommand(newListCommand())
+	rootCmd.AddCommand(newNewCommand())
+	rootCmd.AddCommand(newCopyCommand())
+	rootCmd.AddCommand(newDeleteCommand())
+	rootCmd.AddCommand(newImplodeCommand())
+	rootCmd.AddCommand(newDoctorCommand())
+	rootCmd.AddCommand(newVersionCommand())
+	rootCmd.AddCommand(newCommandsCommand())
+	rootCmd.AddCommand(newCompletionsCommand())
 }
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".tmuxi" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".tmuxi")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.SetEnvPrefix("TMUXI")
+	viper.AutomaticEnv()
+	_ = viper.ReadInConfig()
+}
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+func isReservedCommand(name string) bool {
+	reserved := map[string]struct{}{
+		"commands": {}, "completions": {}, "copy": {}, "c": {}, "cp": {},
+		"debug": {}, "delete": {}, "d": {}, "rm": {}, "doctor": {},
+		"help": {}, "implode": {}, "i": {}, "list": {}, "l": {}, "ls": {},
+		"local": {}, ".": {}, "new": {}, "open": {}, "edit": {}, "o": {}, "e": {}, "n": {},
+		"start": {}, "s": {}, "stop": {}, "st": {}, "stop-all": {}, "version": {}, "-v": {},
 	}
+	_, ok := reserved[name]
+	return ok
 }
