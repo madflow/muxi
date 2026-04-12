@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/discovery"
+	"muxi/internal/discovery"
 )
 
 func newListCommand() *cobra.Command {
@@ -15,7 +15,7 @@ func newListCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"l", "ls"},
-		Short:   "List tmuxi projects",
+		Short:   "List muxi projects",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			names, err := discovery.ListProjectNames()
 			if err != nil {
@@ -34,7 +34,7 @@ func newListCommand() *cobra.Command {
 				}
 				names = filtered
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), "tmuxi projects:")
+			fmt.Fprintln(cmd.OutOrStdout(), "muxi projects:")
 			if newline {
 				printLines(cmd, names)
 				return nil

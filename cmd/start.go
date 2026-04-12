@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"tmuxi/internal/runtime"
-	"tmuxi/internal/tmux"
+	"muxi/internal/runtime"
+	"muxi/internal/tmux"
 
 	"github.com/spf13/cobra"
 )

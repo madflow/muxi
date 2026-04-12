@@ -41,7 +41,7 @@ func DetectVersion() Version {
 func UnsupportedVersionMessage() string {
 	items := append([]string(nil), supportedVersions...)
 	sort.Strings(items)
-	return "WARNING: You are running tmuxi with an unsupported version of tmux. Please consider using a supported version: (" + strings.Join(items, ", ") + ")"
+	return "WARNING: You are running muxi with an unsupported version of tmux. Please consider using a supported version: (" + strings.Join(items, ", ") + ")"
 }
 
 func ActiveSessions() ([]string, error) {

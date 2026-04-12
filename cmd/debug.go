@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/runtime"
+	"muxi/internal/runtime"
 )
 
 func newDebugCommand() *cobra.Command {

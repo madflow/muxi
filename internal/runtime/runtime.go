@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"tmuxi/internal/project"
-	"tmuxi/internal/shellquote"
-	"tmuxi/internal/tmux"
+	"muxi/internal/project"
+	"muxi/internal/shellquote"
+	"muxi/internal/tmux"
 )
 
 type StartOptions struct {

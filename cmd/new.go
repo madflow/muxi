@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/discovery"
-	"tmuxi/internal/tmux"
+	"muxi/internal/discovery"
+	"muxi/internal/tmux"
 )
 
 func newNewCommand() *cobra.Command {
@@ -17,7 +17,7 @@ func newNewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "new [project] [session]",
 		Aliases: []string{"open", "edit", "o", "e", "n"},
-		Short:   "Create or open a tmuxi project file",
+		Short:   "Create or open a muxi project file",
 		Args:    cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cwd, err := currentDir()

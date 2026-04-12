@@ -1,4 +1,4 @@
-module tmuxi
+module muxi
 
 go 1.26.2
 

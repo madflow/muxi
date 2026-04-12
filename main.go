@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "tmuxi/cmd"
+import "muxi/cmd"
 
 func main() {
 	cmd.Execute()

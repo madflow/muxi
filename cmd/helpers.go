@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 	"go.yaml.in/yaml/v3"
 
-	"tmuxi/internal/discovery"
-	"tmuxi/internal/project"
-	"tmuxi/internal/runtime"
-	"tmuxi/internal/tmux"
+	"muxi/internal/discovery"
+	"muxi/internal/project"
+	"muxi/internal/runtime"
+	"muxi/internal/tmux"
 )
 
 func currentDir() (string, error) {

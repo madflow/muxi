@@ -3,8 +3,8 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/runtime"
-	"tmuxi/internal/tmux"
+	"muxi/internal/runtime"
+	"muxi/internal/tmux"
 )
 
 func newStopCommand() *cobra.Command {

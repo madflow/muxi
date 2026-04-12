@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/discovery"
+	"muxi/internal/discovery"
 )
 
 func newCopyCommand() *cobra.Command {

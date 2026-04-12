@@ -7,13 +7,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"tmuxi/internal/discovery"
+	"muxi/internal/discovery"
 )
 
 var cfgFile string
 
 var rootCmd = &cobra.Command{
-	Use:           "tmuxi",
+	Use:           "muxi",
 	Short:         "A tmux project orchestrator in Go",
 	SilenceUsage:  true,
 	SilenceErrors: true,
@@ -55,7 +55,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "tmuxi config file")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "muxi config file")
 	rootCmd.SetOut(os.Stdout)
 	rootCmd.SetErr(os.Stderr)
 
@@ -83,10 +83,10 @@ func initConfig() {
 		cobra.CheckErr(err)
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".tmuxi")
+		viper.SetConfigName(".muxi")
 	}
 
-	viper.SetEnvPrefix("TMUXI")
+	viper.SetEnvPrefix("MUXI")
 	viper.AutomaticEnv()
 	_ = viper.ReadInConfig()
 }

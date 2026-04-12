@@ -6,13 +6,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/tmux"
+	"muxi/internal/tmux"
 )
 
 func newDoctorCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
-		Short: "Check whether tmuxi can run on this machine",
+		Short: "Check whether muxi can run on this machine",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Fprintf(cmd.OutOrStdout(), "Checking if tmux is installed ==> %t\n", tmux.Installed())
 			fmt.Fprintf(cmd.OutOrStdout(), "Checking if $EDITOR is set ==> %t\n", os.Getenv("EDITOR") != "")

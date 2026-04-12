@@ -3,15 +3,15 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"tmuxi/internal/discovery"
-	"tmuxi/internal/shellquote"
-	"tmuxi/internal/tmux"
+	"muxi/internal/discovery"
+	"muxi/internal/shellquote"
+	"muxi/internal/tmux"
 )
 
 func newStopAllCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stop-all",
-		Short: "Stop all active tmux sessions discovered by tmuxi",
+		Short: "Stop all active tmux sessions discovered by muxi",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sessions, err := tmux.ActiveSessions()
 			if err != nil {
