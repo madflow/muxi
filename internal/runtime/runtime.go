@@ -136,13 +136,7 @@ func BuildStartScript(prepared *PreparedProject, opts StartOptions) string {
 	}
 
 	if prepared.Attach && !opts.Append {
-		lines = append(lines,
-			"if [ -z \"$TMUX\" ]; then",
-			"  "+prepared.TmuxBase+" -u attach-session -t "+shellquote.Quote(prepared.Name),
-			"else",
-			"  "+prepared.TmuxBase+" -u switch-client -t "+shellquote.Quote(prepared.Name),
-			"fi",
-		)
+		lines = append(lines, prepared.TmuxBase+" -u attach-session -t "+shellquote.Quote(prepared.Name))
 	}
 
 	appendIf(&lines, p.Post)
