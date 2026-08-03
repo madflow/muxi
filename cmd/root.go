@@ -68,7 +68,6 @@ func init() {
 	rootCmd.AddCommand(newNewCommand())
 	rootCmd.AddCommand(newCopyCommand())
 	rootCmd.AddCommand(newDeleteCommand())
-	rootCmd.AddCommand(newImplodeCommand())
 	rootCmd.AddCommand(newDoctorCommand())
 	rootCmd.AddCommand(newVersionCommand())
 	rootCmd.AddCommand(newCommandsCommand())
@@ -95,7 +94,7 @@ func isReservedCommand(name string) bool {
 	reserved := map[string]struct{}{
 		"commands": {}, "completions": {}, "copy": {}, "c": {}, "cp": {},
 		"debug": {}, "delete": {}, "d": {}, "rm": {}, "doctor": {},
-		"help": {}, "implode": {}, "i": {}, "list": {}, "l": {}, "ls": {},
+		"help": {}, "list": {}, "l": {}, "ls": {},
 		"local": {}, ".": {}, "new": {}, "open": {}, "edit": {}, "o": {}, "e": {}, "n": {},
 		"start": {}, "s": {}, "stop": {}, "st": {}, "stop-all": {}, "version": {}, "-v": {},
 	}
