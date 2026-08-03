@@ -10,11 +10,10 @@ import (
 )
 
 type StartOptions struct {
-	CustomName                 string
-	ForceAttach                *bool
-	Append                     bool
-	NoPreWindow                bool
-	SuppressTmuxVersionWarning bool
+	CustomName  string
+	ForceAttach *bool
+	Append      bool
+	NoPreWindow bool
 }
 
 type PreparedProject struct {
@@ -24,7 +23,6 @@ type PreparedProject struct {
 	SessionExists bool
 	BaseIndex     int
 	PaneBaseIndex int
-	Version       tmux.Version
 	Attach        bool
 	Warnings      []string
 }
@@ -81,21 +79,14 @@ func Prepare(p *project.Project, opts StartOptions) (*PreparedProject, error) {
 		SessionExists: sessionExists,
 		BaseIndex:     baseIndex,
 		PaneBaseIndex: paneBaseIndex,
-		Version:       tmux.DetectVersion(),
 		Attach:        p.AttachEnabled(opts.ForceAttach),
 		Warnings:      append([]string(nil), p.DeprecatedNotices...),
 	}
 
 	if p.EnablePaneTitles {
-		if prepared.Version.Number > 0 && prepared.Version.Number < 2.6 {
-			prepared.Warnings = append(prepared.Warnings, "WARNING: pane titles require tmux >= 2.6.")
-		}
 		if pos := p.PaneTitlePosition; pos != "" && pos != "top" && pos != "bottom" && pos != "off" {
 			prepared.Warnings = append(prepared.Warnings, "WARNING: invalid pane_title_position, expected top, bottom, or off.")
 		}
-	}
-	if !prepared.Version.Supported && !opts.SuppressTmuxVersionWarning {
-		prepared.Warnings = append(prepared.Warnings, tmux.UnsupportedVersionMessage())
 	}
 
 	return prepared, nil
@@ -118,9 +109,6 @@ func BuildStartScript(prepared *PreparedProject, opts StartOptions) string {
 		appendIf(&lines, p.OnProjectFirstStart)
 		if !opts.Append {
 			lines = append(lines, newSessionCommand(prepared))
-		}
-		if prepared.Version.Number > 0 && prepared.Version.Number < 1.7 && p.Root != "" {
-			lines = append(lines, prepared.TmuxBase+" set-option -t "+shellquote.Quote(prepared.Name)+" default-path "+shellquote.Quote(p.Root)+" 1>/dev/null")
 		}
 		lines = append(lines, warningLines(prepared.Warnings)...)
 		for index, window := range p.Windows {
@@ -166,7 +154,7 @@ func buildWindowCommands(prepared *PreparedProject, window project.Window, index
 	if window.Synchronize == "before" {
 		lines = append(lines, prepared.TmuxBase+" set-window-option -t "+shellquote.Quote(target)+" synchronize-panes on")
 	}
-	if prepared.Project.EnablePaneTitles && prepared.Version.Number >= 2.6 {
+	if prepared.Project.EnablePaneTitles {
 		position := prepared.Project.PaneTitlePosition
 		if position == "" || (position != "top" && position != "bottom" && position != "off") {
 			position = "top"
@@ -190,7 +178,7 @@ func buildWindowCommands(prepared *PreparedProject, window project.Window, index
 		}
 	} else {
 		for paneIndex, pane := range window.Panes {
-			if prepared.Project.EnablePaneTitles && prepared.Version.Number >= 2.6 && pane.Title != nil {
+			if prepared.Project.EnablePaneTitles && pane.Title != nil {
 				lines = append(lines, prepared.TmuxBase+" select-pane -t "+shellquote.Quote(paneTarget(prepared, index, paneIndex))+" -T "+shellquote.Quote(*pane.Title))
 			}
 			if !noPreWindow && prepared.Project.PreWindow != "" {
@@ -230,7 +218,7 @@ func newSessionCommand(prepared *PreparedProject) string {
 func newWindowCommand(prepared *PreparedProject, window project.Window, index int) string {
 	parts := []string{prepared.TmuxBase, "new-window"}
 	if root := windowRoot(window); root != "" {
-		parts = append(parts, defaultPathFlag(prepared.Version), shellquote.Quote(root))
+		parts = append(parts, "-c", shellquote.Quote(root))
 	}
 	parts = append(parts, "-k", "-t", shellquote.Quote(windowTarget(prepared, index)))
 	if window.Name != nil {
@@ -242,7 +230,7 @@ func newWindowCommand(prepared *PreparedProject, window project.Window, index in
 func splitPaneCommand(prepared *PreparedProject, window project.Window, index int) string {
 	parts := []string{prepared.TmuxBase, "splitw"}
 	if root := windowRoot(window); root != "" {
-		parts = append(parts, defaultPathFlag(prepared.Version), shellquote.Quote(root))
+		parts = append(parts, "-c", shellquote.Quote(root))
 	}
 	parts = append(parts, "-t", shellquote.Quote(windowTarget(prepared, index)))
 	return strings.Join(parts, " ")
@@ -306,11 +294,4 @@ func warningLines(warnings []string) []string {
 		lines = append(lines, `printf '%s\n' `+shellquote.Quote(warning)+` >&2`)
 	}
 	return lines
-}
-
-func defaultPathFlag(version tmux.Version) string {
-	if version.Number > 0 && version.Number < 1.8 {
-		return "default-path"
-	}
-	return "-c"
 }

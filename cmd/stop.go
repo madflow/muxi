@@ -9,7 +9,6 @@ import (
 
 func newStopCommand() *cobra.Command {
 	var projectConfig string
-	var suppressWarning bool
 
 	cmd := &cobra.Command{
 		Use:     "stop [project]",
@@ -21,7 +20,7 @@ func newStopCommand() *cobra.Command {
 			if len(args) > 0 {
 				name = args[0]
 			}
-			prepared, err := loadPreparedProject(name, projectConfig, runtime.StartOptions{SuppressTmuxVersionWarning: suppressWarning})
+			prepared, err := loadPreparedProject(name, projectConfig, runtime.StartOptions{})
 			if err != nil {
 				return err
 			}
@@ -30,6 +29,5 @@ func newStopCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&projectConfig, "project-config", "p", "", "path to project config file")
-	cmd.Flags().BoolVar(&suppressWarning, "suppress-tmux-version-warning", false, "suppress unsupported tmux version warning")
 	return cmd
 }

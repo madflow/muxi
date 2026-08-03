@@ -13,7 +13,6 @@ func newStartCommand() *cobra.Command {
 	var projectConfig string
 	var appendMode bool
 	var noPreWindow bool
-	var suppressWarning bool
 
 	cmd := &cobra.Command{
 		Use:     "start [project]",
@@ -30,17 +29,15 @@ func newStartCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&projectConfig, "project-config", "p", "", "path to project config file")
 	cmd.Flags().BoolVar(&appendMode, "append", false, "append windows to the current session")
 	cmd.Flags().BoolVar(&noPreWindow, "no-pre-window", false, "skip pre_window commands")
-	cmd.Flags().BoolVar(&suppressWarning, "suppress-tmux-version-warning", false, "suppress unsupported tmux version warning")
 
 	cmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		cmd.SetContext(withStartOptions(cmd.Context(), startCommandOptions{
-			attach:          attach,
-			attachChanged:   cmd.Flags().Lookup("attach").Changed,
-			customName:      customName,
-			projectConfig:   projectConfig,
-			appendMode:      appendMode,
-			noPreWindow:     noPreWindow,
-			suppressWarning: suppressWarning,
+			attach:        attach,
+			attachChanged: cmd.Flags().Lookup("attach").Changed,
+			customName:    customName,
+			projectConfig: projectConfig,
+			appendMode:    appendMode,
+			noPreWindow:   noPreWindow,
 		}))
 		return nil
 	}
@@ -49,13 +46,12 @@ func newStartCommand() *cobra.Command {
 }
 
 type startCommandOptions struct {
-	attach          bool
-	attachChanged   bool
-	customName      string
-	projectConfig   string
-	appendMode      bool
-	noPreWindow     bool
-	suppressWarning bool
+	attach        bool
+	attachChanged bool
+	customName    string
+	projectConfig string
+	appendMode    bool
+	noPreWindow   bool
 }
 
 func runStart(cmd *cobra.Command, args []string) error {
@@ -65,30 +61,27 @@ func runStart(cmd *cobra.Command, args []string) error {
 	}
 	opts := startOptionsFromContext(cmd.Context())
 	prepared, err := loadPreparedProject(name, opts.projectConfig, runtime.StartOptions{
-		CustomName:                 opts.customName,
-		ForceAttach:                attachPointer(opts),
-		Append:                     opts.appendMode,
-		NoPreWindow:                opts.noPreWindow,
-		SuppressTmuxVersionWarning: opts.suppressWarning,
+		CustomName:  opts.customName,
+		ForceAttach: attachPointer(opts),
+		Append:      opts.appendMode,
+		NoPreWindow: opts.noPreWindow,
 	})
 	if err != nil {
 		return err
 	}
 	if !tmux.Installed() {
 		return tmux.RunScript(runtime.BuildStartScript(prepared, runtime.StartOptions{
-			CustomName:                 opts.customName,
-			ForceAttach:                attachPointer(opts),
-			Append:                     opts.appendMode,
-			NoPreWindow:                opts.noPreWindow,
-			SuppressTmuxVersionWarning: opts.suppressWarning,
+			CustomName:  opts.customName,
+			ForceAttach: attachPointer(opts),
+			Append:      opts.appendMode,
+			NoPreWindow: opts.noPreWindow,
 		}))
 	}
 	return tmux.RunScript(runtime.BuildStartScript(prepared, runtime.StartOptions{
-		CustomName:                 opts.customName,
-		ForceAttach:                attachPointer(opts),
-		Append:                     opts.appendMode,
-		NoPreWindow:                opts.noPreWindow,
-		SuppressTmuxVersionWarning: opts.suppressWarning,
+		CustomName:  opts.customName,
+		ForceAttach: attachPointer(opts),
+		Append:      opts.appendMode,
+		NoPreWindow: opts.noPreWindow,
 	}))
 }
 

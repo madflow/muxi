@@ -4,44 +4,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 )
 
-var supportedVersions = []string{
-	"3.6a", "3.6", "3.5a", "3.5", "3.4", "3.3a", "3.3", "3.2a", "3.2",
-	"3.1c", "3.1b", "3.1a", "3.1", "3.0a", "3.0", "2.9a", "2.9", "2.8",
-	"2.7", "2.6", "2.5", "2.4", "2.3", "2.2", "2.1", "2.0", "1.9", "1.8",
-	"1.7", "1.6", "1.5",
-}
-
-type Version struct {
-	Raw       string
-	Number    float64
-	Supported bool
-}
-
 func Installed() bool {
 	_, err := exec.LookPath("tmux")
 	return err == nil
-}
-
-func DetectVersion() Version {
-	output, err := exec.Command("tmux", "-V").Output()
-	if err != nil {
-		return Version{}
-	}
-	raw := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(string(output)), "tmux "))
-	number := parseVersionNumber(raw)
-	return Version{Raw: raw, Number: number, Supported: isSupported(raw, number)}
-}
-
-func UnsupportedVersionMessage() string {
-	items := append([]string(nil), supportedVersions...)
-	sort.Strings(items)
-	return "WARNING: You are running muxi with an unsupported version of tmux. Please consider using a supported version: (" + strings.Join(items, ", ") + ")"
 }
 
 func ActiveSessions() ([]string, error) {
@@ -88,37 +57,6 @@ func shell() string {
 		return value
 	}
 	return "/bin/bash"
-}
-
-func parseVersionNumber(raw string) float64 {
-	re := regexp.MustCompile(`\d+(?:\.\d+)?`)
-	match := re.FindString(raw)
-	if match == "" {
-		return 0
-	}
-	value, err := strconv.ParseFloat(match, 64)
-	if err != nil {
-		return 0
-	}
-	return value
-}
-
-func isSupported(raw string, number float64) bool {
-	for _, item := range supportedVersions {
-		if raw == item {
-			return true
-		}
-	}
-	if number == 0 {
-		return false
-	}
-	formatted := strconv.FormatFloat(number, 'f', -1, 64)
-	for _, item := range supportedVersions {
-		if item == formatted {
-			return true
-		}
-	}
-	return false
 }
 
 func CurrentSessionName(tmuxBase string) (string, error) {
@@ -181,11 +119,6 @@ func LastWindowIndex(tmuxBase string) (int, error) {
 }
 
 func ImportSession(name, session string) (map[string]any, error) {
-	version := DetectVersion()
-	if version.Number > 0 && version.Number < 1.6 {
-		return nil, fmt.Errorf("creating projects from sessions is unsupported for tmux version 1.5 or lower")
-	}
-
 	windowsRaw, err := exec.Command(shell(), "-lc", `tmux list-windows -t `+quote(session)+` -F '#W #{window_layout} #{window_active} #{pane_current_path}'`).CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("session %q doesn't exist", session)
